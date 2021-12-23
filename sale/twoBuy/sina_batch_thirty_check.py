@@ -11,7 +11,7 @@ import tonghs
 
 def Time_threading(inc):
     times = {'10:30','11:00','13:00','13:30','14:00','14:30'}
-    time_last = '21:19'
+    time_last = '14:50'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()
@@ -52,7 +52,23 @@ def get_stock_data(id,scale,data_len):
     print("结束时间: " ,datetime.now())
     print("选到了: " ,df)
     return df
+def get_stock_data_check(id,scale,data_len):
 
+    symsols = {'sh601107'}
+    scale = scale
+    data_len = data_len
+    bar_list = []
+
+    for symsol in symsols:
+        print("开始",symsol)
+        res_json = http_stock_data(symsol,scale,data_len)
+        # 具体的筛选逻辑
+        select_gp(res_json,bar_list,symsol,data_len)
+    df = pd.DataFrame(data=bar_list)
+    # show_k_line(bar_list,bar_list2,high_list,high_list2)
+    print("结束时间: " ,datetime.now())
+    print("选到了: " ,df)
+    return df
 def select_gp(res_json,bar_list,symsol,data_len):
     twentyPriceSum = float(0.00)
     nowCloseRice = float(0.00)
@@ -61,7 +77,7 @@ def select_gp(res_json,bar_list,symsol,data_len):
     nowVolume = 0
     i = 0
     for dict in res_json:
-
+        # 处理当日最后一个30分钟的筛选
         if 20 == data_len:
             if 0 == i:
                 nowCloseRice = float(dict['close'])
@@ -122,3 +138,4 @@ def get_hource():
     return mm
 #函数调用 60标识一分钟
 Time_threading(60)
+# get_stock_data_check('EE',30,20)

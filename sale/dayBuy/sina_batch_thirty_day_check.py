@@ -13,7 +13,7 @@ import tonghs
 def Time_threading(inc):
 
     times = {'10:00','10:30','11:00','13:00','13:30','14:00','14:30'}
-    time_last = '16:34'
+    time_last = '14:45'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()
@@ -28,7 +28,7 @@ def Time_threading(inc):
         else:
             if time_now == time:
                 print(time_now)
-                df = batch_stock_data('26',60,76+i,i,0)
+                df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
         i = i+1
 def batch_stock_data(id,scale,data_len,index,flage):
     symsols = tonghs.get_ths_data(id)
@@ -42,7 +42,7 @@ def batch_stock_data(id,scale,data_len,index,flage):
     print(df)
 #测试
 def batch_stock_data_test(id,scale,data_len,index,flage):
-    symsols = {'sh603586'}
+    symsols = {'sz000665'}
     bar_list = []
     for symsol in symsols:
         sum_list = get_stock_data_60(symsol,scale,data_len)
@@ -214,4 +214,4 @@ def compare(setInts):
     return maxInt
 
 Time_threading(60)
-# batch_stock_data_test('26',60,80,8,0)
+# batch_stock_data_test('26',60,77,2,0)

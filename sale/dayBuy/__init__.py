@@ -19,5 +19,8 @@
 # setInts.add(int(3))
 # setInts.add(int(2))
 # print(compareInt(setInts))
-data_len = 4
-print(16-data_len%4)
+iss={2,3,4,5,6,7,8}
+for i in iss:
+    m = (i-i%2)/2+i%2
+    mm = int((i-i%2)/2+i%2)
+    print(mm)

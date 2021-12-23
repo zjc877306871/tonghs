@@ -10,7 +10,7 @@ import tonghs
 
 
 def Time_threading(inc):
-    times = {'10:03'}
+    times = {'10:00'}
     time_last = '16:53'
 
     t = Timer(inc,Time_threading,(inc,))
@@ -165,5 +165,5 @@ def get_hource():
     mm = h + ':' + m
     return mm
 #函数调用 60标识一分钟
-# Time_threading(60)
-get_stock_data_check(1,30,10)
+Time_threading(60)
+# get_stock_data_check(1,30,10)
