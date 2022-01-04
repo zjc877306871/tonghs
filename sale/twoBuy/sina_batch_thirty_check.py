@@ -10,13 +10,14 @@ import tonghs
 
 
 def Time_threading(inc):
-    times = {'10:30','11:00','13:00','13:30','14:00','14:30'}
-    time_last = '14:50'
+    times = ['10:31','11:01','13:01','13:31','14:01','14:31']
+    time_last = '14:53'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()
     time_now = get_hource()
     for time in times:
+        i = 3
         if time_now == time_last:
             print(time_now)
             df = get_stock_data('EE',30,20)
@@ -31,6 +32,7 @@ def Time_threading(inc):
             # df.to_csv("D:\finance\gp\数据\1111_stock.csv", encoding="gbk", index=False)
         # else:
             # print('围在时间内： ',datetime.now())
+        i = i+1
     #导入到excel
 
     # print(df)
@@ -38,12 +40,13 @@ def Time_threading(inc):
 def get_stock_data(id,scale,data_len):
 
     symsols = tonghs.get_ths_data(id)
+    print('三十分钟二买总量',len(symsols))
     scale = scale
     data_len = data_len
     bar_list = []
 
     for symsol in symsols:
-        print("开始",symsol)
+        # print("开始",symsol)
         res_json = http_stock_data(symsol,scale,data_len)
         # 具体的筛选逻辑
         select_gp(res_json,bar_list,symsol,data_len)
@@ -54,13 +57,13 @@ def get_stock_data(id,scale,data_len):
     return df
 def get_stock_data_check(id,scale,data_len):
 
-    symsols = {'sh601107'}
+    symsols = {'sh600775'}
     scale = scale
     data_len = data_len
     bar_list = []
 
     for symsol in symsols:
-        print("开始",symsol)
+        # print("开始",symsol)
         res_json = http_stock_data(symsol,scale,data_len)
         # 具体的筛选逻辑
         select_gp(res_json,bar_list,symsol,data_len)
@@ -73,6 +76,7 @@ def select_gp(res_json,bar_list,symsol,data_len):
     twentyPriceSum = float(0.00)
     nowCloseRice = float(0.00)
     nowOpenRice = float(0.00)
+    nowMaxRice = float(0.00)
     nowFiveVolume = 0
     nowVolume = 0
     i = 0
@@ -84,17 +88,15 @@ def select_gp(res_json,bar_list,symsol,data_len):
                 nowOpenRice = float(dict['open'])
                 nowFiveVolume = int(dict['ma_volume5'])
                 nowVolume = int(dict['volume'])
+                nowMaxRice = float(dict['high'])
                 day = dict['day']
             close = float(dict['close'])
             twentyPriceSum = round(twentyPriceSum + close, 2)
-
+            #获取前一个的收盘价
+            if 1== i:
+                lasteClosePrice =  float(dict['close'])
             if (20 == data_len) & (i == 19):
-                twentyPrice = round(twentyPriceSum/20,2)
-                if (nowOpenRice < twentyPrice) & (nowCloseRice > twentyPrice) & (nowVolume > nowFiveVolume):
-                    bar = {}
-                    bar['symsol'] = symsol
-                    bar['day'] = datetime.now()
-                    bar_list.append(bar)
+                get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,bar_list,symsol)
         elif  21 == data_len:
             if 0 != i:
                 close = float(dict['close'])
@@ -104,15 +106,12 @@ def select_gp(res_json,bar_list,symsol,data_len):
                 nowOpenRice = float(dict['open'])
                 nowFiveVolume = int(dict['ma_volume5'])
                 nowVolume = int(dict['volume'])
-                day = dict['day']
+                nowMaxRice = float(dict['high'])
+            if 2==i:
+                lasteClosePrice =  float(dict['close'])
             if (21 == data_len) & (i == 20):
-                twentyPrice = round(twentyPriceSum/20,2)
-                if (nowOpenRice < twentyPrice) & (nowCloseRice > twentyPrice) & (nowVolume > nowFiveVolume):
-                    bar = {}
-                    bar['symsol'] = symsol
-                    bar['day'] = datetime.now()
-                    bar_list.append(bar)
-                    # print("选到了",bar_list)
+                get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,bar_list,symsol)
+
         i += 1
 def http_stock_data(id,scale,data_len):
     id = id
@@ -136,6 +135,18 @@ def get_hource():
         m = '0'+ m
     mm = h + ':' + m
     return mm
+
+def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,bar_list,symsol):
+    twentyPrice = round(twentyPriceSum/20,2)
+    shiTiPrice = round(nowCloseRice-nowOpenRice,2)
+    shangYingPrice = round(nowMaxRice-nowCloseRice,2)
+    shangZhangPrice = round(nowCloseRice-lasteClosePrice,2)
+    scale = round((shangZhangPrice/lasteClosePrice)*100,2)
+    if (nowOpenRice<twentyPrice) & (nowCloseRice>twentyPrice) & (nowVolume>nowFiveVolume) &(shiTiPrice>shangYingPrice)&(scale<3):
+        bar = {}
+        bar['symsol'] = symsol
+        bar['day'] = datetime.now()
+        bar_list.append(bar)
 #函数调用 60标识一分钟
 Time_threading(60)
-# get_stock_data_check('EE',30,20)
+# get_stock_data_check('EE',30,21)

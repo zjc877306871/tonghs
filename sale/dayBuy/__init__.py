@@ -19,8 +19,6 @@
 # setInts.add(int(3))
 # setInts.add(int(2))
 # print(compareInt(setInts))
-iss={2,3,4,5,6,7,8}
-for i in iss:
-    m = (i-i%2)/2+i%2
-    mm = int((i-i%2)/2+i%2)
-    print(mm)
+aa = set()
+aa.add("3")
+print(aa)

@@ -10,7 +10,7 @@ import tonghs
 
 
 def Time_threading(inc):
-    times = {'10:00'}
+    times = ['10:00']
     time_last = '16:53'
 
     t = Timer(inc,Time_threading,(inc,))
@@ -51,7 +51,7 @@ def get_stock_data_check(id,scale,data_len):
 
 def get_stock_data(id,scale,data_len):
     symsols = tonghs.get_self_data()
-    print(symsols)
+    print('自选总量',len(symsols))
     scale = scale
     data_len = data_len
     bar_list = []

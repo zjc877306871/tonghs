@@ -12,26 +12,24 @@ import tonghs
 
 def Time_threading(inc):
 
-    times = {'10:00','10:30','11:00','13:00','13:30','14:00','14:30'}
-    time_last = '14:45'
+    times = ['10:02','10:32','11:02','13:02','13:32','14:23','14:32']
+    time_last = '14:48'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()
     time_now = get_hource()
+    if time_now == time_last:
+        print(time_now)
+        df = batch_stock_data('26',60,80,8,1)
+    i = 2
     for time in times:
-        i = 2
-
-        if time_now == time_last:
-            print(time_now)
-            df = batch_stock_data('26',60,80,8,1)
-            break
-        else:
-            if time_now == time:
-                print(time_now)
-                df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
+        if time_now == time:
+            print(time)
+            df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
         i = i+1
 def batch_stock_data(id,scale,data_len,index,flage):
     symsols = tonghs.get_ths_data(id)
+    print('二十日总量',len(symsols))
     bar_list = []
     for symsol in symsols:
         sum_list = get_stock_data_60(symsol,scale,data_len)
@@ -42,7 +40,7 @@ def batch_stock_data(id,scale,data_len,index,flage):
     print(df)
 #测试
 def batch_stock_data_test(id,scale,data_len,index,flage):
-    symsols = {'sz000665'}
+    symsols = {'sz000408'}
     bar_list = []
     for symsol in symsols:
         sum_list = get_stock_data_60(symsol,scale,data_len)
@@ -172,7 +170,7 @@ def select_now_gp(res_json,bar_list,symsol,data_len,sum_list,flage):
     #5日均价
     fivePrice = round(fivePriceSum/5, 2)
     if 0==flage:
-        if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume) &  (fivePrice>twentyPrice):
+        if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume):
             bar = {}
             bar['symsol'] = symsol
             bar['day'] = datetime.now()
@@ -184,7 +182,7 @@ def select_now_gp(res_json,bar_list,symsol,data_len,sum_list,flage):
         shiTiPrice =  round(nowCloseRice-nowOpenRice, 2)
         dayZhangFu =  round(nowCloseRice-lastDayClosePrice, 2)
         scale = round(dayZhangFu/lastDayClosePrice*100, 2)
-        if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume) & (shiTiPrice>shangYingPrice) &(scale<4) & (fivePrice>twentyPrice):
+        if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume) & (shiTiPrice>shangYingPrice) &(scale<6):
             bar = {}
             bar['symsol'] = symsol
             bar['day'] = datetime.now()
@@ -214,4 +212,5 @@ def compare(setInts):
     return maxInt
 
 Time_threading(60)
-# batch_stock_data_test('26',60,77,2,0)
+# batch_stock_data_test('26',60,80,8,0)
+# batch_stock_data_test('26',60,80,7,0)
