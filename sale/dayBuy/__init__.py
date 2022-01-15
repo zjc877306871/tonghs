@@ -1,4 +1,5 @@
 # import time
+import pandas as pd
 #
 # # 格式化成2016-03-20 11:45:39形式
 # print (time.strftime("%Y%m%d %H:%M:%S", time.localtime())[:8])
@@ -19,6 +20,8 @@
 # setInts.add(int(3))
 # setInts.add(int(2))
 # print(compareInt(setInts))
-aa = set()
-aa.add("3")
-print(aa)
+bar_list = ['333','444']
+df = pd.DataFrame(data=bar_list)
+print(df)
+if(len(df) > 0) :
+    print(1)

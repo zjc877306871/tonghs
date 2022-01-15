@@ -7,11 +7,14 @@ import pandas as pd
 from datetime import datetime
 from threading import Timer
 import tonghs
+import timeApi
+import stringApi
+from redisSelf import redisSelf
 
 
 def Time_threading(inc):
     times = ['10:31','11:01','13:01','13:31','14:01','14:31']
-    time_last = '14:53'
+    time_last = '14:52'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()
@@ -20,12 +23,27 @@ def Time_threading(inc):
         i = 3
         if time_now == time_last:
             print(time_now)
-            df = get_stock_data('EE',30,20)
+            try:
+                df = get_stock_data('EE',30,20)
+            except BaseException:
+                df = get_stock_data('EE',30,20)
+
+            # if(len(df) > 2):
+            key = 'two:'+ timeApi.formart_date('','%Y%m%d')+':1500'
+            conn = redisSelf.getRedisConnection()
+            conn.set(key,df)
             break
         else:
             if time_now == time:
                 print(time_now)
-                df = get_stock_data('EE',30,21)
+                try:
+                    df = get_stock_data('EE',30,21)
+                except BaseException:
+                    df = get_stock_data('EE',30,21)
+                # if(len(df) > 2):
+                key = 'two:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
+                conn = redisSelf.getRedisConnection()
+                conn.set(key,df)
             # df.to_csv("D:\finance\gp\数据\1111_stock.csv", encoding="gbk", index=False)
             # else:
                 # print('围在时间内： ',datetime.now())
@@ -54,6 +72,7 @@ def get_stock_data(id,scale,data_len):
     # show_k_line(bar_list,bar_list2,high_list,high_list2)
     print("结束时间: " ,datetime.now())
     print("选到了: " ,df)
+    df = json.dumps(bar_list)
     return df
 def get_stock_data_check(id,scale,data_len):
 
@@ -145,7 +164,8 @@ def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteCloseP
     if (nowOpenRice<twentyPrice) & (nowCloseRice>twentyPrice) & (nowVolume>nowFiveVolume) &(shiTiPrice>shangYingPrice)&(scale<3):
         bar = {}
         bar['symsol'] = symsol
-        bar['day'] = datetime.now()
+        bar['buyPrice'] = nowCloseRice
+        # bar['day'] = timeApi.formart_date('','%Y-%m-%d %H:%M')
         bar_list.append(bar)
 #函数调用 60标识一分钟
 Time_threading(60)

@@ -12,4 +12,15 @@ def get_hource():
     print(mm)
     return mm
 
-get_hource()
+# get_hource()
+
+def formart_date(time, formart):
+    timeStr = ''
+    if(len(time) > 0 ):
+        timeStr = time.strftime(formart)
+    else:
+        timeStr = datetime.now().strftime(formart)
+
+    return timeStr
+
+formart_date('','%Y-%m-%d %H:%M')

@@ -8,11 +8,14 @@ from datetime import datetime
 from threading import Timer
 import time
 import tonghs
-
+import timeApi
+import stringApi
+from redisSelf import redisSelf
+import logging
 
 def Time_threading(inc):
 
-    times = ['10:02','10:32','11:02','13:02','13:32','14:23','14:32']
+    times = ['10:02','10:32','11:02','13:02','13:32','14:02','14:32']
     time_last = '14:48'
 
     t = Timer(inc,Time_threading,(inc,))
@@ -20,12 +23,30 @@ def Time_threading(inc):
     time_now = get_hource()
     if time_now == time_last:
         print(time_now)
-        df = batch_stock_data('26',60,80,8,1)
+        try:
+            df = batch_stock_data('26',60,80,8,1)
+        except BaseException:
+            df = batch_stock_data('26',60,80,8,1)
+        key = 'twenty:'+ timeApi.formart_date('','%Y%m%d')+':1500'
+        conn = redisSelf.getRedisConnection()
+        # if(len(df) > 2):
+        conn.set(key,df)
     i = 2
     for time in times:
         if time_now == time:
             print(time)
-            df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
+            try:
+                df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
+            except BaseException:
+                df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
+            if i == 8:
+                key = 'next:twenty:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
+            else:
+                key = 'record:twenty:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
+            conn = redisSelf.getRedisConnection()
+            print(len(df))
+            # if(len(df) > 2):
+            conn.set(key,df)
         i = i+1
 def batch_stock_data(id,scale,data_len,index,flage):
     symsols = tonghs.get_ths_data(id)
@@ -38,6 +59,8 @@ def batch_stock_data(id,scale,data_len,index,flage):
     df = pd.DataFrame(data=bar_list)
     # show_k_line(bar_list,bar_list2,high_list,high_list2)
     print(df)
+    df = json.dumps(bar_list)
+    return df
 #测试
 def batch_stock_data_test(id,scale,data_len,index,flage):
     symsols = {'sz000408'}
@@ -169,23 +192,25 @@ def select_now_gp(res_json,bar_list,symsol,data_len,sum_list,flage):
     fiveVolume = lastFourVolume/5
     #5日均价
     fivePrice = round(fivePriceSum/5, 2)
+    dayMax = compare(nowMaxPrice)
+    shangYingPrice =  round(dayMax-nowCloseRice, 2)
+    shiTiPrice =  round(nowCloseRice-nowOpenRice, 2)
+    dayZhangFu =  round(nowCloseRice-lastDayClosePrice, 2)
+    scale = round(dayZhangFu/lastDayClosePrice*100, 2)
     if 0==flage:
-        if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume):
+        if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume)& (scale >7):
             bar = {}
             bar['symsol'] = symsol
-            bar['day'] = datetime.now()
+            bar['buyPrice'] = nowCloseRice
+            # bar['day'] = datetime.now()
             bar_list.append(bar)
             print("选到了",bar_list)
     else:
-        dayMax = compare(nowMaxPrice)
-        shangYingPrice =  round(dayMax-nowCloseRice, 2)
-        shiTiPrice =  round(nowCloseRice-nowOpenRice, 2)
-        dayZhangFu =  round(nowCloseRice-lastDayClosePrice, 2)
-        scale = round(dayZhangFu/lastDayClosePrice*100, 2)
         if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume) & (shiTiPrice>shangYingPrice) &(scale<6):
             bar = {}
             bar['symsol'] = symsol
-            bar['day'] = datetime.now()
+            bar['buyPrice'] = nowCloseRice
+            # bar['day'] = datetime.now()
             bar_list.append(bar)
             print("选到了",bar_list)
 #函数调用 60标识一分钟
