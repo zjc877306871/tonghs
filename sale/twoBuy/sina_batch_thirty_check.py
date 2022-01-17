@@ -1,6 +1,5 @@
 
-
-from matplotlib import font_manager
+from logger.logger import Logger
 from urllib import request
 import json
 import pandas as pd
@@ -14,8 +13,7 @@ from redisSelf import redisSelf
 
 def Time_threading(inc):
     times = ['10:31','11:01','13:01','13:31','14:01','14:31']
-    time_last = '14:52'
-
+    time_last = '15:21'
     t = Timer(inc,Time_threading,(inc,))
     t.start()
     time_now = get_hource()
@@ -23,11 +21,13 @@ def Time_threading(inc):
         i = 3
         if time_now == time_last:
             print(time_now)
+            df = ''
             try:
                 df = get_stock_data('EE',30,20)
             except BaseException:
                 df = get_stock_data('EE',30,20)
-
+            log.logger.info("结束时间: " + timeApi.formart_date('','%Y-%m-%d %H:%M:%S'))
+            log.logger.info("选到了: " +df)
             # if(len(df) > 2):
             key = 'two:'+ timeApi.formart_date('','%Y%m%d')+':1500'
             conn = redisSelf.getRedisConnection()
@@ -35,30 +35,24 @@ def Time_threading(inc):
             break
         else:
             if time_now == time:
-                print(time_now)
+                log.logger.info(time_now)
+                df = ''
                 try:
                     df = get_stock_data('EE',30,21)
                 except BaseException:
                     df = get_stock_data('EE',30,21)
+                log.logger.info("结束时间: " + timeApi.formart_date('','%Y-%m-%d %H:%M:%S'))
+                log.logger.info("选到了: " +df)
                 # if(len(df) > 2):
                 key = 'two:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
                 conn = redisSelf.getRedisConnection()
                 conn.set(key,df)
-            # df.to_csv("D:\finance\gp\数据\1111_stock.csv", encoding="gbk", index=False)
-            # else:
-                # print('围在时间内： ',datetime.now())
-            # df.to_csv("D:\finance\gp\数据\1111_stock.csv", encoding="gbk", index=False)
-        # else:
-            # print('围在时间内： ',datetime.now())
         i = i+1
-    #导入到excel
-
-    # print(df)
     # df.head()
 def get_stock_data(id,scale,data_len):
 
     symsols = tonghs.get_ths_data(id)
-    print('三十分钟二买总量',len(symsols))
+    log.logger.info('三十分钟二买总量'+str(len(symsols)))
     scale = scale
     data_len = data_len
     bar_list = []
@@ -69,9 +63,6 @@ def get_stock_data(id,scale,data_len):
         # 具体的筛选逻辑
         select_gp(res_json,bar_list,symsol,data_len)
     df = pd.DataFrame(data=bar_list)
-    # show_k_line(bar_list,bar_list2,high_list,high_list2)
-    print("结束时间: " ,datetime.now())
-    print("选到了: " ,df)
     df = json.dumps(bar_list)
     return df
 def get_stock_data_check(id,scale,data_len):
@@ -87,9 +78,7 @@ def get_stock_data_check(id,scale,data_len):
         # 具体的筛选逻辑
         select_gp(res_json,bar_list,symsol,data_len)
     df = pd.DataFrame(data=bar_list)
-    # show_k_line(bar_list,bar_list2,high_list,high_list2)
-    print("结束时间: " ,datetime.now())
-    print("选到了: " ,df)
+
     return df
 def select_gp(res_json,bar_list,symsol,data_len):
     twentyPriceSum = float(0.00)
@@ -168,5 +157,6 @@ def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteCloseP
         # bar['day'] = timeApi.formart_date('','%Y-%m-%d %H:%M')
         bar_list.append(bar)
 #函数调用 60标识一分钟
+log = Logger("D:\logs\二买\info.txt")
 Time_threading(60)
 # get_stock_data_check('EE',30,21)

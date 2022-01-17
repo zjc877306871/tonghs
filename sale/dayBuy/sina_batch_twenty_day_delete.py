@@ -1,15 +1,12 @@
 
 
-from matplotlib import font_manager
 from urllib import request
 import json
-import pandas as pd
 from datetime import datetime
 from threading import Timer
 import time
 import tonghs
-import iniFile.iniWrite
-
+from logger.logger import Logger
 
 def Time_threading(inc):
 
@@ -27,15 +24,11 @@ def Time_threading(inc):
 
 def batch_stock_data(id,scale,data_len):
     symsols = tonghs.get_ths_data(id)
-    print('二十日总量',len(symsols))
+    log.logger.info('二十日总量'+str(len(symsols)))
     bar_list = set()
     for symsol in symsols:
         get_stock_data_60(symsol,scale,data_len,bar_list)
-        # get_stock_data_30(symsol,30,index,sum_list,bar_list,flage)
-    # iniFile.iniWrite.get_ths_data(id,iniFile.iniWrite.tranName(bar_list))
-    # df = pd.DataFrame(data=bar_list)
-    # show_k_line(bar_list,bar_list2,high_list,high_list2)
-    print(bar_list)
+    log.logger.info('result:'+json.dumps(bar_list))
 def http_stock_data(id,scale,data_len):
     id = id
     scale = scale
@@ -115,4 +108,5 @@ def compare(setInts):
     return maxInt
 
 # Time_threading(60)
+log = Logger("D:\logs\长期日\delete.txt")
 batch_stock_data('26',60,80)

@@ -1,17 +1,18 @@
 
 
-from matplotlib import font_manager
+from logger.logger import Logger
 from urllib import request
 import json
 import pandas as pd
 from datetime import datetime
 from threading import Timer
 import tonghs
+import timeApi
 
 
 def Time_threading(inc):
-    times = ['10:00']
-    time_last = '16:53'
+    times = ['10:03']
+    time_last = '16:21'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()
@@ -20,20 +21,15 @@ def Time_threading(inc):
         if time_now == time_last:
             print(time_now)
             df = get_stock_data('EE',30,20)
+            log.logger.info("结束时间: " + timeApi.formart_date('','%Y-%m-%d %H:%M:%S'))
+            log.logger.info("选到了: " +df)
             break
         else:
             if time_now == time:
-                print(time_now)
+                log.logger.info(time_now)
                 df = get_stock_data('EE',30,22)
-            # df.to_csv("D:\finance\gp\数据\1111_stock.csv", encoding="gbk", index=False)
-            else:
-                print('围在时间内： ',datetime.now())
-            # df.to_csv("D:\finance\gp\数据\1111_stock.csv", encoding="gbk", index=False)
-        # else:
-            # print('围在时间内： ',datetime.now())
-    #导入到excel
-
-    # print(df)
+                log.logger.info("结束时间: " + timeApi.formart_date('','%Y-%m-%d %H:%M:%S'))
+                log.logger.info("选到了: " +df)
     # df.head()
 def get_stock_data_check(id,scale,data_len):
     symsols = tonghs.get_self_data()
@@ -51,7 +47,7 @@ def get_stock_data_check(id,scale,data_len):
 
 def get_stock_data(id,scale,data_len):
     symsols = tonghs.get_self_data()
-    print('自选总量',len(symsols))
+    log.logger.info('自选总量{}'+str(len(symsols)))
     scale = scale
     data_len = data_len
     bar_list = []
@@ -59,9 +55,8 @@ def get_stock_data(id,scale,data_len):
         res_json = http_stock_data(symsol,scale,data_len)
         # 具体的筛选逻辑
         select_gp(res_json,bar_list,symsol,data_len)
-    df = pd.DataFrame(data=bar_list)
-    # show_k_line(bar_list,bar_list2,high_list,high_list2)
-    print("选到了: " ,df)
+    # df = pd.DataFrame(data=bar_list)
+    df = json.dumps(bar_list)
     return df
 def http_stock_data(id,scale,data_len):
     id = id
@@ -111,7 +106,7 @@ def select_gp(res_json,bar_list,symsol,data_len):
     newScale = (newCloseRice-lastDayClosePrice)/lastDayClosePrice*100
     if (newOpenRice < fivePrice) & (newCloseRice > fivePrice) & (newVolume > newFiveVolume) &(newShiTi > newShangYing) & (newScale < 4 ):
         bar_list.append(symsol)
-        print("选到了",bar_list)
+        # print("选到了",bar_list)
 
 
 def select_gp_check(res_json,bar_list,symsol,data_len):
@@ -152,7 +147,7 @@ def select_gp_check(res_json,bar_list,symsol,data_len):
     newScale = (newCloseRice-lastDayClosePrice)/lastDayClosePrice*100
     if (newOpenRice < fivePrice) & (newCloseRice > fivePrice) & (newVolume > newFiveVolume) &(newShiTi > newShangYing) & (newScale < 4 ):
         bar_list.append(symsol)
-        print("选到了",bar_list)
+        # print("选到了",bar_list)
 #获取当前时间分钟
 def get_hource():
     hour = datetime.now().hour
@@ -165,5 +160,6 @@ def get_hource():
     mm = h + ':' + m
     return mm
 #函数调用 60标识一分钟
+log = Logger("D:\logs\自选\info.txt")
 Time_threading(60)
 # get_stock_data_check(1,30,10)
