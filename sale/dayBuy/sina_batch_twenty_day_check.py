@@ -11,7 +11,7 @@ import tonghs
 import timeApi
 import stringApi
 from redisSelf import redisSelf
-import logging
+from logger.logger import Logger
 
 def Time_threading(inc):
 
@@ -34,7 +34,7 @@ def Time_threading(inc):
     i = 2
     for time in times:
         if time_now == time:
-            print(time)
+            log.logger.info(time)
             try:
                 df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
             except BaseException:
@@ -50,16 +50,16 @@ def Time_threading(inc):
         i = i+1
 def batch_stock_data(id,scale,data_len,index,flage):
     symsols = tonghs.get_ths_data(id)
-    print('二十日总量',len(symsols))
+    log.logger.info('二十日总量'+ str(len(symsols)))
     bar_list = []
     for symsol in symsols:
         sum_list = get_stock_data_60(symsol,scale,data_len)
         get_stock_data_30(symsol,30,index,sum_list,bar_list,flage)
 
     df = pd.DataFrame(data=bar_list)
-    # show_k_line(bar_list,bar_list2,high_list,high_list2)
     print(df)
     df = json.dumps(bar_list)
+    log.logger.info('二十日选出结果'+df)
     return df
 #测试
 def batch_stock_data_test(id,scale,data_len,index,flage):
@@ -235,7 +235,7 @@ def compare(setInts):
         if setInt>maxInt:
             maxInt = setInt
     return maxInt
-
+log = Logger("D:\logs\长期日\info.txt")
 Time_threading(60)
 # batch_stock_data_test('26',60,80,8,0)
 # batch_stock_data_test('26',60,80,7,0)

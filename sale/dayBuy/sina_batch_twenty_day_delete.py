@@ -25,7 +25,7 @@ def Time_threading(inc):
 def batch_stock_data(id,scale,data_len):
     symsols = tonghs.get_ths_data(id)
     log.logger.info('二十日总量'+str(len(symsols)))
-    bar_list = set()
+    bar_list = []
     for symsol in symsols:
         get_stock_data_60(symsol,scale,data_len,bar_list)
     log.logger.info('result:'+json.dumps(bar_list))
@@ -35,7 +35,7 @@ def http_stock_data(id,scale,data_len):
     data_len = data_len
     url = 'http://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol={0}&scale={1}&datalen={2}'.format(id, scale, data_len)
     req = request.Request(url)
-    rsp = request.urlopen(req)
+    rsp = request.urlopen(req,timeout=2)
     res = rsp.read()
     res_json = json.loads(res)
     res_json.reverse()
@@ -82,7 +82,7 @@ def select_his_gp(res_json,symsol,data_len,bar_list):
             j = 1
     if 0==j:
         print(symsol[2:])
-        bar_list.add(symsol[2:])
+        bar_list.append(symsol[2:])
 
 #函数调用 60标识一分钟
 # Time_threading(60)

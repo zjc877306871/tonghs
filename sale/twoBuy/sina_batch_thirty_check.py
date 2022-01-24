@@ -13,7 +13,7 @@ from redisSelf import redisSelf
 
 def Time_threading(inc):
     times = ['10:31','11:01','13:01','13:31','14:01','14:31']
-    time_last = '15:21'
+    time_last = '14:52'
     t = Timer(inc,Time_threading,(inc,))
     t.start()
     time_now = get_hource()

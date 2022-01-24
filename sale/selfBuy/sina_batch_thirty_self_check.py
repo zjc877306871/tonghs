@@ -11,7 +11,7 @@ import timeApi
 
 
 def Time_threading(inc):
-    times = ['10:03']
+    times = ['10:01']
     time_last = '16:21'
 
     t = Timer(inc,Time_threading,(inc,))
