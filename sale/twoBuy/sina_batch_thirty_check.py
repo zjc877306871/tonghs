@@ -3,7 +3,6 @@ from logger.logger import Logger
 from urllib import request
 import json
 import pandas as pd
-from datetime import datetime
 from threading import Timer
 import tonghs
 import timeApi
@@ -11,13 +10,14 @@ import stringApi
 from redisSelf import redisSelf
 from concurrent.futures import ThreadPoolExecutor
 from entity.StockSelf import Stock
+import httpClientSina
 
 def Time_threading(inc):
     times = ['10:38','11:01','13:01','13:31','14:01','14:31']
     time_last = '17:31'
     t = Timer(inc,Time_threading,(inc,))
     t.start()
-    time_now = get_hource()
+    time_now = timeApi.get_hource()
     for time in times:
         i = 3
         if time_now == time_last:
@@ -71,27 +71,12 @@ def get_stock_data(id,scale,data_len):
     return df
 # 异步任务封装
 def asnyDealData(symsol,scale,data_len):
-    res_json = http_stock_data(symsol,scale,data_len)
+    res_json = httpClientSina.http_stock_data(symsol,scale,data_len)
     # 具体的筛选逻辑
     stock = select_gp(res_json,symsol,data_len)
     return stock
 
-def get_stock_data_check(id,scale,data_len):
 
-    symsols = {'sh600775'}
-    scale = scale
-    data_len = data_len
-    bar_list = []
-
-    for symsol in symsols:
-        # print("开始",symsol)
-        res_json = http_stock_data(symsol,scale,data_len)
-        # 具体的筛选逻辑
-        stock = select_gp(res_json,symsol,data_len)
-        bar_list.append(stock)
-    df = pd.DataFrame(data=bar_list)
-
-    return df
 def select_gp(res_json,symsol,data_len):
     twentyPriceSum = float(0.00)
     nowCloseRice = float(0.00)
@@ -134,28 +119,7 @@ def select_gp(res_json,symsol,data_len):
                 stock = get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol)
                 return stock
         i += 1
-def http_stock_data(id,scale,data_len):
-    id = id
-    scale = scale
-    data_len = data_len
-    url = 'http://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol={0}&scale={1}&datalen={2}'.format(id, scale, data_len)
-    req = request.Request(url)
-    rsp = request.urlopen(req,timeout=3)
-    res = rsp.read()
-    res_json = json.loads(res)
-    res_json.reverse()
-    return  res_json
-#获取当前时间分钟
-def get_hource():
-    hour = datetime.now().hour
-    minute = datetime.now().minute
-    # print(datetime.now())
-    h = str(hour)
-    m = str(minute)
-    if 1 == len(m):
-        m = '0'+ m
-    mm = h + ':' + m
-    return mm
+
 
 def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol):
     twentyPrice = round(twentyPriceSum/20,2)
@@ -164,13 +128,26 @@ def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteCloseP
     shangZhangPrice = round(nowCloseRice-lasteClosePrice,2)
     scale = round((shangZhangPrice/lasteClosePrice)*100,2)
     if (nowOpenRice<twentyPrice) & (nowCloseRice>twentyPrice) & (nowVolume>nowFiveVolume) &(shiTiPrice>shangYingPrice)&(scale<3):
-        # bar = {}
-        # bar['symsol'] = symsol
-        # bar['buyPrice'] = nowCloseRice
-        # # bar['day'] = timeApi.formart_date('','%Y-%m-%d %H:%M')
-        # bar_list.append(bar)
         stock = Stock(symsol, nowCloseRice)
         return stock
+
+
+# def get_stock_data_check(id,scale,data_len):
+#
+#     symsols = {'sh600775'}
+#     scale = scale
+#     data_len = data_len
+#     bar_list = []
+#
+#     for symsol in symsols:
+#         # print("开始",symsol)
+#         res_json = http_stock_data(symsol,scale,data_len)
+#         # 具体的筛选逻辑
+#         stock = select_gp(res_json,symsol,data_len)
+#         bar_list.append(stock)
+#     df = pd.DataFrame(data=bar_list)
+#
+#     return df
 #函数调用 60标识一分钟
 log = Logger("D:\logs\二买\info.txt")
 Time_threading(60)
