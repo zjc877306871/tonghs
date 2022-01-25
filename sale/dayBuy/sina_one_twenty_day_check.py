@@ -15,49 +15,50 @@ from logger.logger import Logger
 from concurrent.futures import ThreadPoolExecutor
 from entity.StockSelf import Stock
 import httpClientSina
-def Time_threading(inc):
-
-    times = ['10:02','10:32','11:02','13:02','13:32','14:02','14:32']
-    time_last = '14:48'
-
-    t = Timer(inc,Time_threading,(inc,))
-    t.start()
-    time_now = timeApi.get_hource()
-    if time_now == time_last:
-        print(time_now)
-        try:
-            df = batch_stock_data('26',60,80,8,1)
-        except BaseException:
-            df = batch_stock_data('26',60,80,8,1)
-        # 获取最后满足的20日线条件
-        key = 'twenty:'+ timeApi.formart_date('','%Y%m%d')+':1500'
-        conn = redisSelf.getRedisConnection()
-        # if(len(df) > 2):
-        conn.set(key,df)
-    i = 2
-    for time in times:
-        if time_now == time:
-            log.logger.info(time)
-            try:
-                df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
-            except BaseException:
-                df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
-            if i == 8:
-                # 汇集了3:00之前的满足条件的数据
-                key = 'next:twenty:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
-            else:
-                # 分别记录各个时间的数据
-                key = 'record:twenty:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
-            conn = redisSelf.getRedisConnection()
-            print(len(df))
-            # if(len(df) > 2):
-            conn.set(key,df)
-        i = i+1
+# def Time_threading(inc):
+#
+#     times = ['10:02','10:32','11:02','13:02','13:32','14:02','14:32']
+#     time_last = '14:48'
+#
+#     t = Timer(inc,Time_threading,(inc,))
+#     t.start()
+#     time_now = timeApi.get_hource()
+#     if time_now == time_last:
+#         print(time_now)
+#         try:
+#             df = batch_stock_data('26',60,80,8,1)
+#         except BaseException:
+#             df = batch_stock_data('26',60,80,8,1)
+#         # 获取最后满足的20日线条件
+#         key = 'twenty:'+ timeApi.formart_date('','%Y%m%d')+':1500'
+#         conn = redisSelf.getRedisConnection()
+#         # if(len(df) > 2):
+#         conn.set(key,df)
+#     i = 2
+#     for time in times:
+#         if time_now == time:
+#             log.logger.info(time)
+#             try:
+#                 df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
+#             except BaseException:
+#                 df = batch_stock_data('26',60,(76+int((i-i%2)/2+i%2)),i,0)
+#             if i == 8:
+#                 # 汇集了3:00之前的满足条件的数据
+#                 key = 'next:twenty:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
+#             else:
+#                 # 分别记录各个时间的数据
+#                 key = 'record:twenty:'+ timeApi.formart_date('','%Y%m%d:')+ stringApi.changeStr(time_now,'0')
+#             conn = redisSelf.getRedisConnection()
+#             print(len(df))
+#             # if(len(df) > 2):
+#             conn.set(key,df)
+#         i = i+1
 
 
 #         批量处理数据
 def batch_stock_data(id,scale,data_len,index,flage):
-    symsols = tonghs.get_ths_data(id)
+    symsols = []
+    symsols.append(id)
     log.logger.info('二十日选择总量'+ str(len(symsols)))
     bar_list = []
     for symsol in symsols:
@@ -75,23 +76,28 @@ def batch_stock_data(id,scale,data_len,index,flage):
     log.logger.info('二十日选出结果'+df)
     return df
 
-def asnyDealData(symsol,scale,data_len,index,flage):
-
-    sum_list = get_stock_data_60(symsol,scale,data_len)
-    stock = get_stock_data_30(symsol,30,index,sum_list,flage)
-    return stock
 #测试
 def batch_stock_data_test(id,scale,data_len,index,flage):
     symsols = {'sz000408'}
     bar_list = []
     for symsol in symsols:
-        sum_list = get_stock_data_60(symsol,scale,data_len)
-        get_stock_data_30(symsol,30,index,sum_list,bar_list,flage)
+        # 异步多线程
+        executor = ThreadPoolExecutor(10)
+        future =  executor.submit(asnyDealData,symsol,scale,data_len,index,flage)
+        stock = future.result()
+        if stock:
+            dict = stock.stock2dict()
+            bar_list.append(dict)
 
     df = pd.DataFrame(data=bar_list)
     # show_k_line(bar_list,bar_list2,high_list,high_list2)
     print(df)
 
+def asnyDealData(symsol,scale,data_len,index,flage):
+
+    sum_list = get_stock_data_60(symsol,scale,data_len)
+    stock = get_stock_data_30(symsol,30,index,sum_list,flage)
+    return stock
 def get_stock_data_30(id,scale,data_len,sum_list,flage):
 
     res_json = httpClientSina.http_stock_data(id,scale,data_len)
@@ -224,6 +230,6 @@ def compare(setInts):
             maxInt = setInt
     return maxInt
 log = Logger("D:\logs\长期日\info.txt")
-Time_threading(60)
-# batch_stock_data_test('26',60,80,8,0)
+
+batch_stock_data_test('26',60,80,8,0)
 # batch_stock_data_test('26',60,80,7,0)

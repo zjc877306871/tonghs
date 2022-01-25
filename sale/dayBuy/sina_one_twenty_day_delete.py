@@ -21,8 +21,9 @@ def Time_threading(inc):
         df = batch_stock_data('ef',60,80)
 
 def batch_stock_data(id,scale,data_len):
-    symsols = tonghs.get_ths_data(id)
-    log.logger.info('二十日删除总量'+str(len(symsols)))
+    symsols = []
+    symsols.append(id)
+    print('检查的代码'+symsols)
     bar_list = []
     for symsol in symsols:
         executor = ThreadPoolExecutor(10)
