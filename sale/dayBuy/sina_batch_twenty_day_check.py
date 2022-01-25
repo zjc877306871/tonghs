@@ -161,6 +161,7 @@ def select_now_gp(res_json,symsol,data_len,sum_list,flage):
     nowOpenRice = float(0.00)
     nowMaxPrice = {float(0.00)}
     lastVolume = 0
+    nowTime = ''
     i = 0
     for dict in res_json:
         # 汇集最高价
@@ -170,6 +171,9 @@ def select_now_gp(res_json,symsol,data_len,sum_list,flage):
         if i == 0:
             # 获取最新收盘
             nowCloseRice = float(dict['close'])
+        if i == 1:
+        #     获取记录数据的时间
+            nowTime = dict['day']
         if i == data_len-1:
             #获取当日开盘
             nowOpenRice = float(dict['open'])
@@ -200,12 +204,12 @@ def select_now_gp(res_json,symsol,data_len,sum_list,flage):
     scale = round(dayZhangFu/lastDayClosePrice*100, 2)
     if 0==flage:
         if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume)& (scale >7):
-            stock = Stock(symsol,nowCloseRice)
+            stock = Stock(symsol,nowCloseRice,nowTime)
             print("选到了",symsol)
             return stock
     else:
         if (nowOpenRice<fivePrice) & (nowCloseRice>fivePrice) & (lastVolume>fiveVolume) & (shiTiPrice>shangYingPrice) &(scale<6):
-            stock = Stock(symsol,nowCloseRice)
+            stock = Stock(symsol,nowCloseRice,nowTime)
             print("选到了",symsol)
             return stock
 #函数调用 60标识一分钟

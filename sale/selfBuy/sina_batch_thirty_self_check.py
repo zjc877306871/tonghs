@@ -65,15 +65,16 @@ def select_gp(res_json,symsol):
     newVolume = 0
     newShangYing = float(0.00)
     newShiTi = float(0.00)
+    nowDay = ''
     i = 0
     for dict in res_json:
         # 获取10点前20个的收盘价
-        if (0 != i) & (1 != i) &(2 != i) &(3 != i)&(4 != i):
+        if (0 != i) :
             close = float(dict['close'])
             # print(close)
             fivePriceSum = fivePriceSum + close
         #获取9：30-10：00的数据的
-        if 5== i:
+        if 1== i:
             newCloseRice = float(dict['close'])
             newOpenRice = float(dict['open'])
             newFiveVolume = int(dict['ma_volume5'])
@@ -82,18 +83,19 @@ def select_gp(res_json,symsol):
             newMinPrice = float(dict['low'])
             newShangYing = newMaxPrice-newCloseRice;
             newShiTi = newCloseRice-newOpenRice
+            nowDay = dict['day']
 
         # 获取前一日的收盘价
-        if 6== i:
+        if 2== i:
             lastDayClosePrice = float(dict['close'])
         # 计算9：30-10：00的30分钟的5均线
-        if (i == 9):
+        if (i == 5):
             fivePrice = fivePriceSum/5
         i += 1
     newScale = (newCloseRice-lastDayClosePrice)/lastDayClosePrice*100
     if (newOpenRice < fivePrice) & (newCloseRice > fivePrice) & (newVolume > newFiveVolume) &(newShiTi > newShangYing) & (newScale < 4 ):
         # bar_list.append(symsol)
-        stock = Stock(symsol,newCloseRice)
+        stock = Stock(symsol,newCloseRice,nowDay)
         return stock
 
 #函数调用 60标识一分钟

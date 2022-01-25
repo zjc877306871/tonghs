@@ -36,6 +36,7 @@ def select_gp(res_json,symsol):
     newShangYing = float(0.00)
     newShiTi = float(0.00)
     i = 0
+    nowDay = ''
     for dict in res_json:
         # 获取10点前20个的收盘价
         if (0 != i) & (1 != i) &(2 != i) &(3 != i)&(4 != i):
@@ -52,6 +53,7 @@ def select_gp(res_json,symsol):
             newMinPrice = float(dict['low'])
             newShangYing = newMaxPrice-newCloseRice;
             newShiTi = newCloseRice-newOpenRice
+            nowDay = dict['day']
 
         # 获取前一日的收盘价
         if 6== i:
@@ -63,7 +65,7 @@ def select_gp(res_json,symsol):
     newScale = (newCloseRice-lastDayClosePrice)/lastDayClosePrice*100
     if (newOpenRice < fivePrice) & (newCloseRice > fivePrice) & (newVolume > newFiveVolume) &(newShiTi > newShangYing) & (newScale < 4 ):
         # bar_list.append(symsol)
-        stock = Stock(symsol,newCloseRice)
+        stock = Stock(symsol,newCloseRice,nowDay)
         return stock
 
 get_stock_data_check('sz002707',30,20)

@@ -101,7 +101,7 @@ def select_gp(res_json,symsol,data_len):
             if 1== i:
                 lasteClosePrice =  float(dict['close'])
             if (20 == data_len) & (i == 19):
-                stock = get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol)
+                stock = get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol,day)
                 return stock
         elif  21 == data_len:
             if 0 != i:
@@ -113,22 +113,23 @@ def select_gp(res_json,symsol,data_len):
                 nowFiveVolume = int(dict['ma_volume5'])
                 nowVolume = int(dict['volume'])
                 nowMaxRice = float(dict['high'])
+                day = dict['day']
             if 2==i:
                 lasteClosePrice =  float(dict['close'])
             if (21 == data_len) & (i == 20):
-                stock = get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol)
+                stock = get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol,day)
                 return stock
         i += 1
 
 
-def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol):
+def get_result_gp(twentyPriceSum,nowCloseRice,nowOpenRice,nowMaxRice,lasteClosePrice,nowVolume,nowFiveVolume,symsol,day):
     twentyPrice = round(twentyPriceSum/20,2)
     shiTiPrice = round(nowCloseRice-nowOpenRice,2)
     shangYingPrice = round(nowMaxRice-nowCloseRice,2)
     shangZhangPrice = round(nowCloseRice-lasteClosePrice,2)
     scale = round((shangZhangPrice/lasteClosePrice)*100,2)
     if (nowOpenRice<twentyPrice) & (nowCloseRice>twentyPrice) & (nowVolume>nowFiveVolume) &(shiTiPrice>shangYingPrice)&(scale<3):
-        stock = Stock(symsol, nowCloseRice)
+        stock = Stock(symsol, nowCloseRice,day)
         return stock
 
 

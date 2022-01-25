@@ -1,11 +1,8 @@
 from redisSelf import redisSelf
 from urllib import request
 import json
-import pandas as pd
-from datetime import datetime
 from threading import Timer
-import time
-import tonghs
+import httpClientSina
 import timeApi
 import stringApi
 # 循环获取最近三天的redis的数据
@@ -55,8 +52,8 @@ def batch_stock_data(key,scale,data_len):
         print('三十分钟二买总量',len(symsols))
         for symsol in symsols:
             # print("开始",symsol)
-            res_json = http_stock_data(symsol['symsol'],scale,data_len)
-            count_thirty_data(res_json)
+            res_json = httpClientSina.http_stock_data(symsol['symsol'],scale,data_len)
+            count_thirty_data(res_json,symsol)
     scale = scale
     data_len = data_len
     bar_list = []
@@ -83,17 +80,5 @@ def get_need_redis_key(key,connect,num):
                 i = i+1
     newkeys.sort(reverse=True)
     return newkeys
-
-def http_stock_data(id,scale,data_len):
-    id = id
-    scale = scale
-    data_len = data_len
-    url = 'http://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol={0}&scale={1}&datalen={2}'.format(id, scale, data_len)
-    req = request.Request(url)
-    rsp = request.urlopen(req,timeout=1)
-    res = rsp.read()
-    res_json = json.loads(res)
-    res_json.reverse()
-    return  res_json
 
 Time_threading(60)
