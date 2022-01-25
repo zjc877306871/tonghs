@@ -1,5 +1,7 @@
 from datetime import datetime
 import pandas as pd
+
+# 获取当前时间的小时和分钟字符串
 def get_hource():
     hour = datetime.now().hour
     minute = datetime.now().minute

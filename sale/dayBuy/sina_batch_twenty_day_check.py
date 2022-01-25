@@ -1,10 +1,6 @@
 
-
-from matplotlib import font_manager
-from urllib import request
 import json
 import pandas as pd
-from datetime import datetime
 from threading import Timer
 import time
 import tonghs
@@ -18,7 +14,7 @@ import httpClientSina
 def Time_threading(inc):
 
     times = ['10:02','10:32','11:02','13:02','13:32','14:02','14:32']
-    time_last = '14:48'
+    time_last = '15:17'
 
     t = Timer(inc,Time_threading,(inc,))
     t.start()

@@ -8,7 +8,7 @@ from datetime import datetime
 from threading import Timer
 import tonghs
 
-
+# 废弃
 def Time_threading(inc):
     times = {'10:03'}
     time_last = '16:53'
